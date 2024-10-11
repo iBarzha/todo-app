@@ -1,16 +1,150 @@
 {% extends 'base.html' %}
+
 {% block content %}
-    <h1 class="my-4">ToDo List</h1>
-    <a href="{% url 'task_create' %}" class="btn btn-primary mb-3">Create a New Task</a>
-    <div class="list-group">
-        {% for task in tasks %}
-            <a href="{% url 'task_detail' task.id %}" class="list-group-item list-group-item-action">
-                <div class="d-flex w-100 justify-content-between">
-                    <h5 class="mb-1">{{ task.title }}</h5>
-                    <small class="text-muted">{{ task.get_status_display }}</small>
-                </div>
-                <p class="mb-1">{{ task.description|truncatechars:50 }}</p>
-            </a>
-        {% endfor %}
+<div class="container my-4">
+    <h1 class="text-center mb-4">ToDo Board</h1>
+
+    <style>
+        #not-started, #in-progress, #completed {
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 10px;
+            min-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        #not-started {
+            background-color: #f8d7da;
+        }
+
+        #in-progress {
+            background-color: #fff3cd;
+        }
+
+        #completed {
+            background-color: #d4edda;
+        }
+
+        .task-card {
+            background-color: white;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .task-card:hover {
+            transform: scale(1.02);
+        }
+
+        .column-title {
+            text-align: center;
+        }
+    </style>
+
+    <div class="row">
+        <div class="col-md-4" id="not-started" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <h3 class="column-title">Not started</h3>
+            <div class="list-group">
+                {% for task in tasks %}
+                    {% if task.status == 'not_started' %}
+                    <div class="list-group-item task-card" id="task-{{ task.id }}" draggable="true" ondragstart="drag(event)">
+                        <h5 class="mb-1">{{ task.title }}</h5>
+                        <p class="mb-1">{{ task.description|truncatechars:50 }}</p>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="col-md-4" id="in-progress" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <h3 class="column-title">In progress</h3>
+            <div class="list-group">
+                {% for task in tasks %}
+                    {% if task.status == 'in_progress' %}
+                    <div class="list-group-item task-card" id="task-{{ task.id }}" draggable="true" ondragstart="drag(event)">
+                        <h5 class="mb-1">{{ task.title }}</h5>
+                        <p class="mb-1">{{ task.description|truncatechars:50 }}</p>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="col-md-4" id="completed" ondrop="drop(event)" ondragover="allowDrop(event)">
+            <h3 class="column-title">Complete</h3>
+            <div class="list-group">
+                {% for task in tasks %}
+                    {% if task.status == 'completed' %}
+                    <div class="list-group-item task-card" id="task-{{ task.id }}" draggable="true" ondragstart="drag(event)">
+                        <h5 class="mb-1">{{ task.title }}</h5>
+                        <p class="mb-1">{{ task.description|truncatechars:50 }}</p>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
     </div>
+
+    <div class="text-center my-4">
+        <a href="{% url 'task_create' %}" class="btn btn-primary">Create task</a>
+    </div>
+</div>
+
+<script>
+    function allowDrop(event) {
+        event.preventDefault();
+    }
+
+    function drag(event) {
+        event.dataTransfer.setData("text", event.target.id);
+    }
+
+    function drop(event) {
+        event.preventDefault();
+        var task_id = event.dataTransfer.getData("text");
+        var task_element = document.getElementById(task_id);
+
+        if (event.target.classList.contains('list-group')) {
+            event.target.appendChild(task_element);
+        } else if (event.target.closest('.list-group')) {
+            event.target.closest('.list-group').appendChild(task_element);
+        }
+
+        var newStatus;
+        if (event.target.id === 'not-started' || event.target.closest('#not-started')) {
+            newStatus = 'not_started';
+        } else if (event.target.id === 'in-progress' || event.target.closest('#in-progress')) {
+            newStatus = 'in_progress';
+        } else if (event.target.id === 'completed' || event.target.closest('#completed')) {
+            newStatus = 'completed';
+        }
+
+        fetch(`/update_task_status/${task_id.split('-')[1]}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 'status': newStatus }),
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Problem with update status task');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log(data.message);
+            task_element.classList.remove('list-group-item');
+            task_element.classList.add('updated');
+            task_element.querySelector('h5').textContent = task_element.querySelector('h5').textContent;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+</script>
 {% endblock %}
