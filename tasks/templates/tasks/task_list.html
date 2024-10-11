@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h1 class="my-4">ToDo List</h1>
+    <a href="{% url 'task_create' %}" class="btn btn-primary mb-3">Create a New Task</a>
+    <div class="list-group">
+        {% for task in tasks %}
+            <a href="{% url 'task_detail' task.id %}" class="list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">{{ task.title }}</h5>
+                    <small class="text-muted">{{ task.get_status_display }}</small>
+                </div>
+                <p class="mb-1">{{ task.description|truncatechars:50 }}</p>
+            </a>
+        {% endfor %}
+    </div>
+{% endblock %}
