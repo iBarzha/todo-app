@@ -11,7 +11,6 @@ function drop(event) {
     var task_id = event.dataTransfer.getData("text");
     var task_element = document.getElementById(task_id);
 
-    // Determine the new status based on the column where the task is dropped
     var newStatus;
     if (event.target.id === 'not-started' || event.target.closest('#not-started')) {
         newStatus = 'not_started';
@@ -20,17 +19,15 @@ function drop(event) {
     } else if (event.target.id === 'completed' || event.target.closest('#completed')) {
         newStatus = 'completed';
     } else {
-        return; // Exit if not dropping into a valid column
+        return;
     }
 
-    // Move the task element to the new column
     if (event.target.classList.contains('list-group')) {
         event.target.appendChild(task_element);
     } else if (event.target.closest('.list-group')) {
         event.target.closest('.list-group').appendChild(task_element);
     }
 
-    // Send an AJAX request to update the task's status on the server
     fetch(`/update_task_status/${task_id.split('-')[1]}/`, {
         method: 'POST',
         headers: {

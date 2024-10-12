@@ -48,7 +48,7 @@ def update_task_status(request, task_id):
             task = Task.objects.get(id=task_id)
             task.status = status
             task.save()
-            return JsonResponse({'message': 'Статус задачи обновлен!'}, status=200)
+            return JsonResponse({'message': 'Task status!'}, status=200)
         except Task.DoesNotExist:
-            return JsonResponse({'error': 'Задача не найдена.'}, status=404)
-    return JsonResponse({'error': 'Неверный запрос.'}, status=400)
+            return JsonResponse({'error': 'Task not fined.'}, status=404)
+    return JsonResponse({'error': 'Not correct.'}, status=400)
