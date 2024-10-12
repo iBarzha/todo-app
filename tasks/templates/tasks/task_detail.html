@@ -26,6 +26,7 @@
             <div class="text-center">
                 <a href="{% url 'task_update' task.id %}" class="btn btn-warning">Edit Task</a>
                 <a href="{% url 'task_list' %}" class="btn btn-secondary">Back to Task List</a>
+                <a href="{% url 'task_delete' task.id %}" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this task?');">Delete Task</a>
             </div>
         </div>
     </div>
