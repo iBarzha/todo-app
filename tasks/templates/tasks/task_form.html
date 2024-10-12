@@ -1,15 +1,47 @@
 {% extends 'base.html' %}
+
 {% block content %}
-    <h1>
+<div class="container my-4">
+    <h1 class="text-center mb-4">
         {% if task %}
-            {{ task.title }}
+            Edit Task: {{ task.title }}
         {% else %}
             Create a New Task
         {% endif %}
     </h1>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Save Task</button>
-    </form>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form method="POST" action="{% if task %}{% url 'task_update' task.id %}{% else %}{% url 'task_create' %}{% endif %}">
+                {% csrf_token %}
+
+                <div class="form-group mb-4">
+                    <label for="title" class="form-label">Task Title</label>
+                    <input type="text" class="form-control border-primary" id="title" name="title" value="{% if task %}{{ task.title }}{% else %}{% endif %}" placeholder="Enter task title" required>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label for="description" class="form-label">Task Description</label>
+                    <textarea class="form-control border-primary" id="description" name="description" rows="4" placeholder="Enter task description">{% if task %}{{ task.description }}{% else %}{% endif %}</textarea>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label for="status" class="form-label">Task Status</label>
+                    <select class="form-control border-success" id="status" name="status" required>
+                        <option value="not_started" {% if task and task.status == 'not_started' %}selected{% endif %}>Not Started</option>
+                        <option value="in_progress" {% if task and task.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                        <option value="completed" {% if task and task.status == 'completed' %}selected{% endif %}>Completed</option>
+                    </select>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-success btn-lg px-4">
+                        {% if task %}Save Changes{% else %}Create Task{% endif %}
+                    </button>
+                    <a href="{% url 'task_list' %}" class="btn btn-secondary btn-lg px-4 ms-2">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
